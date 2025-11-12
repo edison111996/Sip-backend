@@ -9,18 +9,42 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Text;
+using System.Text.Json;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ============================================
+// VALIDAR Y OBTENER CONFIGURACIÓN JWT
+// ============================================
+var jwtKey = builder.Configuration["AppSettings:Token"]
+    ?? throw new InvalidOperationException("JWT Token no está configurado en appsettings.json");
+
+var issuer = builder.Configuration["AppSettings:Issuer"]
+    ?? throw new InvalidOperationException("JWT Issuer no está configurado");
+
+var audience = builder.Configuration["AppSettings:Audience"]
+    ?? throw new InvalidOperationException("JWT Audience no está configurado");
+
+// ✅ Validar longitud mínima de la clave (256 bits = 32 caracteres para HS256)
+if (jwtKey.Length < 32)
+{
+    throw new InvalidOperationException(
+        $"La clave JWT es muy corta ({jwtKey.Length} caracteres). Debe tener al menos 32 caracteres para HS256.");
+}
+
+// ✅ Crear y cachear la clave de firma (evita recrearla en cada request)
+var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
 
 // ============================================
 // SERVICIOS
 // ============================================
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
-
-
 builder.Services.AddAutoMapper(typeof(Program));
+
+// ✅ Registrar la clave como Singleton para reutilizarla en toda la app
+builder.Services.AddSingleton(signingKey);
 
 // ============================================
 // RATE LIMITING
@@ -58,59 +82,108 @@ builder.Services.AddDbContext<VideoGameDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ============================================
-// AUTENTICACIÓN JWT
+// AUTENTICACIÓN JWT - MEJORADA
 // ============================================
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
+            // Validación del Issuer (quién emitió el token)
             ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["AppSettings:Issuer"],
+            ValidIssuer = issuer,
+
+            // Validación del Audience (para quién es el token)
             ValidateAudience = true,
-            ValidAudience = builder.Configuration["AppSettings:Audience"],
+            ValidAudience = audience,
+
+            // Validación de expiración
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero, // 🔒 Sin tolerancia de tiempo
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!)),
-            ValidateIssuerSigningKey = true
+            RequireExpirationTime = true, // ✅ Requiere el claim 'exp'
+            ClockSkew = TimeSpan.Zero,    // ✅ Sin tolerancia de tiempo
+
+            // Validación de la firma
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = signingKey, // ✅ Usar clave cacheada
+            RequireSignedTokens = true,    // ✅ Requiere que el token esté firmado
+
+            // ✅ SEGURIDAD: Solo permitir algoritmo HMAC SHA-256
+            ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 }
         };
 
+        // ============================================
+        // EVENTOS DEL MIDDLEWARE JWT
+        // ============================================
         options.Events = new JwtBearerEvents
         {
-            OnMessageReceived = context =>
-            {
-                // Lee el token del header Authorization
-                var token = context.Request.Headers["Authorization"]
-                    .FirstOrDefault()?.Split(" ").Last();
+            // ❌ ELIMINADO OnMessageReceived - es redundante
+            // El middleware ya lee automáticamente del header Authorization
 
-                if (!string.IsNullOrEmpty(token))
-                {
-                    context.Token = token;
-                }
-
-                return Task.CompletedTask;
-            },
+            // Cuando falla la autenticación
             OnAuthenticationFailed = context =>
             {
+                // Detectar token expirado
                 if (context.Exception is SecurityTokenExpiredException)
                 {
                     context.Response.Headers.Append("Token-Expired", "true");
+
+                    // ✅ Logear en desarrollo
+                    if (builder.Environment.IsDevelopment())
+                    {
+                        Console.WriteLine($"⚠️ Token expirado: {context.Exception.Message}");
+                    }
                 }
+                else if (builder.Environment.IsDevelopment())
+                {
+                    // ✅ Logear otros errores solo en desarrollo
+                    Console.WriteLine($"❌ Error de autenticación: {context.Exception.GetType().Name} - {context.Exception.Message}");
+                }
+
                 return Task.CompletedTask;
             },
+
+            // Personalizar respuesta 401 Unauthorized
             OnChallenge = context =>
             {
-                context.HandleResponse();
+                context.HandleResponse(); // Prevenir respuesta por defecto
+
                 context.Response.StatusCode = 401;
                 context.Response.ContentType = "application/json";
 
-                var result = System.Text.Json.JsonSerializer.Serialize(new
+                var errorMessage = "No autorizado";
+
+                // ✅ En desarrollo, dar más detalles
+                if (builder.Environment.IsDevelopment() && context.AuthenticateFailure != null)
                 {
-                    message = "Token inválido o expirado"
+                    errorMessage = context.AuthenticateFailure.Message;
+                }
+
+                var result = JsonSerializer.Serialize(new
+                {
+                    success = false,
+                    message = errorMessage,
+                    statusCode = 401
                 });
 
                 return context.Response.WriteAsync(result);
+            },
+
+            // ✅ Opcional: Validaciones adicionales después de validar el token
+            OnTokenValidated = context =>
+            {
+                // Aquí puedes agregar lógica personalizada:
+                // - Validar si el usuario sigue activo en la DB
+                // - Verificar roles o permisos adicionales
+                // - Revocar tokens comprometidos
+
+                if (builder.Environment.IsDevelopment())
+                {
+                    var userId = context.Principal?.FindFirst("id")?.Value;
+                    var username = context.Principal?.Identity?.Name;
+                    Console.WriteLine($"✅ Token validado para usuario: {username} (ID: {userId})");
+                }
+
+                return Task.CompletedTask;
             }
         };
     });
@@ -139,9 +212,9 @@ builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IRolePermissionService, RolePermissionService>();
 builder.Services.AddScoped<IModuleService, ModuleService>();
 
-
-
 var app = builder.Build();
+
+app.UseMiddleware<BackendPrueba.Middleware.ExceptionHandlingMiddleware>();
 
 // ============================================
 // MIDDLEWARE PIPELINE
@@ -154,12 +227,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// 🔒 ORDEN IMPORTANTE: CORS debe ir ANTES de Authentication
+// ✅ ORDEN CRÍTICO: CORS debe ir ANTES de Authentication
 app.UseCors("AllowFrontend");
 
 app.UseRateLimiter();
-app.UseAuthentication();
-app.UseAuthorization();
+
+// ✅ ORDEN CRÍTICO: Authentication antes de Authorization
+app.UseAuthentication(); // 🔐 Verifica el token
+app.UseAuthorization();  // 🔒 Verifica permisos
 
 app.MapControllers();
 

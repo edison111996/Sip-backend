@@ -1,0 +1,133 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\E.ACEVEDO\\source\\repos\\BackendPrueba\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{2353E077-2809-46D0-846B-30BFE939824D}|BackendPrueba\\BackendPrueba.csproj|c:\\users\\e.acevedo\\source\\repos\\backendprueba\\backendprueba\\middleware\\exceptionhandlingmiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2353E077-2809-46D0-846B-30BFE939824D}|BackendPrueba\\BackendPrueba.csproj|solutionrelative:backendprueba\\middleware\\exceptionhandlingmiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2353E077-2809-46D0-846B-30BFE939824D}|BackendPrueba\\BackendPrueba.csproj|c:\\users\\e.acevedo\\source\\repos\\backendprueba\\backendprueba\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2353E077-2809-46D0-846B-30BFE939824D}|BackendPrueba\\BackendPrueba.csproj|solutionrelative:backendprueba\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2353E077-2809-46D0-846B-30BFE939824D}|BackendPrueba\\BackendPrueba.csproj|c:\\users\\e.acevedo\\source\\repos\\backendprueba\\backendprueba\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2353E077-2809-46D0-846B-30BFE939824D}|BackendPrueba\\BackendPrueba.csproj|solutionrelative:backendprueba\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2353E077-2809-46D0-846B-30BFE939824D}|BackendPrueba\\BackendPrueba.csproj|c:\\users\\e.acevedo\\source\\repos\\backendprueba\\backendprueba\\middleware\\invalidpasswordexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2353E077-2809-46D0-846B-30BFE939824D}|BackendPrueba\\BackendPrueba.csproj|solutionrelative:backendprueba\\middleware\\invalidpasswordexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2353E077-2809-46D0-846B-30BFE939824D}|BackendPrueba\\BackendPrueba.csproj|c:\\users\\e.acevedo\\source\\repos\\backendprueba\\backendprueba\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2353E077-2809-46D0-846B-30BFE939824D}|BackendPrueba\\BackendPrueba.csproj|solutionrelative:backendprueba\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2353E077-2809-46D0-846B-30BFE939824D}|BackendPrueba\\BackendPrueba.csproj|c:\\users\\e.acevedo\\source\\repos\\backendprueba\\backendprueba\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{2353E077-2809-46D0-846B-30BFE939824D}|BackendPrueba\\BackendPrueba.csproj|solutionrelative:backendprueba\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2353E077-2809-46D0-846B-30BFE939824D}|BackendPrueba\\BackendPrueba.csproj|c:\\users\\e.acevedo\\source\\repos\\backendprueba\\backendprueba\\data\\videogamedbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2353E077-2809-46D0-846B-30BFE939824D}|BackendPrueba\\BackendPrueba.csproj|solutionrelative:backendprueba\\data\\videogamedbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 149,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ExceptionHandlingMiddleware.cs",
+              "DocumentMoniker": "C:\\Users\\E.ACEVEDO\\source\\repos\\BackendPrueba\\BackendPrueba\\Middleware\\ExceptionHandlingMiddleware.cs",
+              "RelativeDocumentMoniker": "BackendPrueba\\Middleware\\ExceptionHandlingMiddleware.cs",
+              "ToolTip": "C:\\Users\\E.ACEVEDO\\source\\repos\\BackendPrueba\\BackendPrueba\\Middleware\\ExceptionHandlingMiddleware.cs",
+              "RelativeToolTip": "BackendPrueba\\Middleware\\ExceptionHandlingMiddleware.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-11T12:58:33.605Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "InvalidPasswordException.cs",
+              "DocumentMoniker": "C:\\Users\\E.ACEVEDO\\source\\repos\\BackendPrueba\\BackendPrueba\\Middleware\\InvalidPasswordException.cs",
+              "RelativeDocumentMoniker": "BackendPrueba\\Middleware\\InvalidPasswordException.cs",
+              "ToolTip": "C:\\Users\\E.ACEVEDO\\source\\repos\\BackendPrueba\\BackendPrueba\\Middleware\\InvalidPasswordException.cs",
+              "RelativeToolTip": "BackendPrueba\\Middleware\\InvalidPasswordException.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-11T12:46:35.452Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\E.ACEVEDO\\source\\repos\\BackendPrueba\\BackendPrueba\\appsettings.json",
+              "RelativeDocumentMoniker": "BackendPrueba\\appsettings.json",
+              "ToolTip": "C:\\Users\\E.ACEVEDO\\source\\repos\\BackendPrueba\\BackendPrueba\\appsettings.json",
+              "RelativeToolTip": "BackendPrueba\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-11-11T12:13:36.628Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AuthService.cs",
+              "DocumentMoniker": "C:\\Users\\E.ACEVEDO\\source\\repos\\BackendPrueba\\BackendPrueba\\Services\\AuthService.cs",
+              "RelativeDocumentMoniker": "BackendPrueba\\Services\\AuthService.cs",
+              "ToolTip": "C:\\Users\\E.ACEVEDO\\source\\repos\\BackendPrueba\\BackendPrueba\\Services\\AuthService.cs",
+              "RelativeToolTip": "BackendPrueba\\Services\\AuthService.cs",
+              "ViewState": "AgIAACMAAAAAAAAAAAAAwD4AAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-11T11:50:22.114Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "C:\\Users\\E.ACEVEDO\\source\\repos\\BackendPrueba\\BackendPrueba\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "BackendPrueba\\Controllers\\AuthController.cs",
+              "ToolTip": "C:\\Users\\E.ACEVEDO\\source\\repos\\BackendPrueba\\BackendPrueba\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "BackendPrueba\\Controllers\\AuthController.cs",
+              "ViewState": "AgIAAKcAAAAAAAAAAAAswM0AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-11T11:49:16.755Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\E.ACEVEDO\\source\\repos\\BackendPrueba\\BackendPrueba\\Program.cs",
+              "RelativeDocumentMoniker": "BackendPrueba\\Program.cs",
+              "ToolTip": "C:\\Users\\E.ACEVEDO\\source\\repos\\BackendPrueba\\BackendPrueba\\Program.cs",
+              "RelativeToolTip": "BackendPrueba\\Program.cs",
+              "ViewState": "AgIAAL8AAAAAAAAAAAAAANgAAABGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T20:41:22.14Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "VideoGameDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\E.ACEVEDO\\source\\repos\\BackendPrueba\\BackendPrueba\\Data\\VideoGameDbContext.cs",
+              "RelativeDocumentMoniker": "BackendPrueba\\Data\\VideoGameDbContext.cs",
+              "ToolTip": "C:\\Users\\E.ACEVEDO\\source\\repos\\BackendPrueba\\BackendPrueba\\Data\\VideoGameDbContext.cs",
+              "RelativeToolTip": "BackendPrueba\\Data\\VideoGameDbContext.cs",
+              "ViewState": "AgIAABEAAAAAAAAAAAAswAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T20:40:05.587Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 ﻿using BackendPrueba.Data;
 using BackendPrueba.Entities;
+using BackendPrueba.Middleware;
 using BackendPrueba.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -7,33 +8,57 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace BackendPrueba.Services
 {
-    public class AuthService(VideoGameDbContext context, IConfiguration configuration) : IAuthService
+    public class AuthService(VideoGameDbContext context, IConfiguration configuration, SymmetricSecurityKey signingKey) : IAuthService
     {
 
-        public async Task<TokenResponseDto?> LoginAsync(UserDto request)
+        //public async Task<TokenResponseDto?> LoginAsync(UserDto request)
+        //{
+        //    var user = context.Users.FirstOrDefault(u => u.Username == request.Username);
+        //    if (user is null)
+        //    {
+        //        return null;
+        //    }
+        //    if (new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, request.Password)
+        //        == PasswordVerificationResult.Failed)
+        //    {
+        //        return null;
+        //    }
+
+        //    var response = new TokenResponseDto
+        //    {
+        //        AccessToken = CreateToken(user),
+        //        RefreshToken = await GenerateAndSaveRefreshTokenAsync(user)
+        //    };
+
+
+        //    return await CreateTokenResponse(user);
+        //}
+
+        public async Task<TokenResponseDto> LoginAsync(UserDto request)
         {
-            var user = context.Users.FirstOrDefault(u => u.Username == request.Username);
+            // 1. Buscar el usuario
+            var user = await context.Users
+                .FirstOrDefaultAsync(u => u.Username == request.Username);
+
+            // 2. Verificar si el usuario existe
             if (user is null)
             {
-                return null;
-            }
-            if (new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, request.Password)
-                == PasswordVerificationResult.Failed)
-            {
-                return null;
+                throw new UserNotFoundException(request.Username);  // ✅ Excepción específica
             }
 
-            var response = new TokenResponseDto
+            // 3. Verificar la contraseña
+            var verificationResult = new PasswordHasher<User>()
+                .VerifyHashedPassword(user, user.PasswordHash, request.Password);
+
+            if (verificationResult == PasswordVerificationResult.Failed)
             {
-                AccessToken = CreateToken(user),
-                RefreshToken = await GenerateAndSaveRefreshTokenAsync(user)
-            };
+                throw new InvalidPasswordException();  // ✅ Excepción específica
+            }
 
-
+            // 4. Si todo está bien, crear y devolver el token
             return await CreateTokenResponse(user);
         }
 
@@ -71,23 +96,46 @@ namespace BackendPrueba.Services
             if (user is null)
                 return null;
 
+            // ✅ ROTACIÓN: Invalida el token anterior
+            user.RefreshToken = null;
+            await context.SaveChangesAsync();
+
+            // Genera nuevos tokens
             return await CreateTokenResponse(user);
         }
 
         private async Task<User?> ValidateRefreshTokenAsync(Guid userId, string refreshToken)
         {
-            var user = await context.Users.FindAsync(userId);
-            if (user is null || user.RefreshToken != refreshToken
-                || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            var user = await context.Users
+                .Include(u => u.RoleId) // Si necesitas el rol
+                .FirstOrDefaultAsync(u => u.IdUser == userId);
+
+            if (user is null)
             {
                 return null;
             }
+
+            if (string.IsNullOrEmpty(user.RefreshToken))
+            {
+                return null;
+            }
+
+            if (user.RefreshToken != refreshToken)
+            {
+                return null;
+            }
+
+            if (user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                return null;
+            }
+
             return user;
         }
 
         private string GenerateRefreshToken()
         {
-            var randomNumber = new byte[32];
+            var randomNumber = new byte[64];
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
@@ -100,45 +148,61 @@ namespace BackendPrueba.Services
 
         private async Task<string> GenerateAndSaveRefreshTokenAsync(User user)
         {
-
             var refreshToken = GenerateRefreshToken();
             user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            var refreshTokenDays = configuration.GetValue<int>("AppSettings:RefreshTokenExpirationDays", 7);
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(refreshTokenDays);
+
+            // ⚠️ AGREGÁ ESTA LÍNEA - SIN ESTO EL TOKEN NO SE GUARDA
             await context.SaveChangesAsync();
+
             return refreshToken;
         }
 
+
+        // ============================================
+        // CREATE ACCESS TOKEN (JWT)
+        // ============================================
         private string CreateToken(User user)
         {
+            // ✅ Claims mejorados
             var claims = new List<Claim>
             {
-                //new Claim(ClaimTypes.Name, user.Username),
-                //new Claim(ClaimTypes.NameIdentifier, user.IdUser.ToString()),
-                //new Claim(ClaimTypes.Role, user.Role),
-
-                new Claim("idUser", user.IdUser.ToString()),
-                new Claim("username", user.Username),
-                new Claim("role", user.RoleId.ToString())
+                new(JwtRegisteredClaimNames.Sub, user.IdUser.ToString()),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()),
+                new("idUser", user.IdUser.ToString()),
+                new("username", user.Username),
+                new(ClaimTypes.Name, user.Username),
+                new(ClaimTypes.NameIdentifier, user.IdUser.ToString())
             };
 
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(configuration.GetValue<string>("AppSettings:Token")!));
+            // ✅ Agregar rol si existe
+            if (user.RoleId != Guid.Empty)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, user.RoleId.ToString()));
+                claims.Add(new Claim("roleId", user.RoleId.ToString()));
+            }
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
+            // ✅ Usar clave inyectada (cacheada)
+            var creds = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
 
+            // ✅ Tiempo de expiración desde configuración
+            var tokenExpirationMinutes = configuration.GetValue<int>("AppSettings:TokenExpirationMinutes", 60);
 
             var tokenDescriptor = new JwtSecurityToken(
-                issuer: configuration.GetValue<string>("AppSettings:Issuer"),
-                audience: configuration.GetValue<string>("AppSettings:Audience"),
+                issuer: configuration["AppSettings:Issuer"],
+                audience: configuration["AppSettings:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddDays(1),
+                expires: DateTime.UtcNow.AddMinutes(tokenExpirationMinutes),
                 signingCredentials: creds
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
+            var token = new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
 
+
+            return token;
         }
-
         public async Task<bool> RevokeRefreshTokenAsync(string refreshToken)
         {
             var user = await context.Users
@@ -154,8 +218,5 @@ namespace BackendPrueba.Services
 
             return true;
         }
-
-
-
     }
 }
